@@ -112,7 +112,6 @@ class Cookie_image_getter:
         self.tag = tag
         self.random_cookie_list = get_cookie_elements(self.tag)
         self.completed = []
-        asyncio.run(self.pick_some_cookies_to_download())
         print("初始化完毕")
 
     async def pick_some_cookies_to_download(self, some=5):

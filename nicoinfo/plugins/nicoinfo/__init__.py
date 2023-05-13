@@ -1,6 +1,6 @@
 import asyncio
 import threading
-from nonebot import get_driver, on_keyword
+from nonebot import get_driver, on_keyword, on_command
 from nonebot.adapters.onebot.v11 import Bot, Event
 from .config import Config
 from .get_info import subscriptions
@@ -20,6 +20,7 @@ async def run_subscribe_update():
 def init_cookie_image_getter():
     global a
     a = Cookie_image_getter()
+    asyncio.run(a.pick_some_cookies_to_download())
 
 
 new_loop = asyncio.new_event_loop()
@@ -59,3 +60,25 @@ async def update_stop(bot: Bot, event: Event):
         await bot.send(event, "订阅更新已关闭")
     else:
         await bot.send(event, "还没有订阅任何作者")
+
+
+sub_cookie_tag = on_command("订阅tag", aliases={"sub_tag"}, block=False)
+@sub_cookie_tag.handle()
+async def sub_tag(bot: Bot, event: Event):
+    args = str(event.get_message()).split(' ')
+    try:
+        tag = args[1]
+        keyword_ = args[2]
+        print(tag, keyword_)
+    except IndexError:
+        await bot.send(event, "参数错误")
+        return
+    b = Cookie_image_getter(tag=tag)
+    await b.pick_some_cookies_to_download()
+    b_activate = on_keyword({keyword_}, block=False)
+    @b_activate.handle()
+    async def b_func():
+        print("涩图启动")
+        await b.send_random_cookie(bot, event)
+
+
