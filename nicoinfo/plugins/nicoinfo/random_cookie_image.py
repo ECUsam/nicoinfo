@@ -1,7 +1,8 @@
 import asyncio
-import glob
 import os
 import random
+
+from aiohttp import ClientSession
 from nonebot.adapters.onebot.v11 import Bot, Event
 import aiohttp
 import requests
@@ -68,6 +69,32 @@ async def download_image(url, local_path):
             else:
                 return False
 
+def get_image_url(base_url, file_id, possible_extensions):
+    for ext in possible_extensions:
+        url = f"{base_url}{file_id}.{ext}"
+        response = requests.get(url)
+        if response.status_code == 200 and 'image' in response.headers['Content-Type']:
+            return url
+    return None
+
+
+async def get_url_im_download(im):
+    id = im.split("im")[1]
+    url = f"https://seiga.nicovideo.jp/image/source/{id}"
+    async with ClientSession() as session:
+        async with session.get(url, headers=header) as response:
+            text = await response.text()
+    soup = BeautifulSoup(text, "html.parser")
+    div = soup.find("div", {"class": "illust_view_big"})
+    data_src = div.get("data-src")
+    return data_src
+
+async def download_with_im(im, local_path="image\\"):
+    print("下载", im)
+    data_src = await get_url_im_download(im)
+    path = os.path.abspath(f'{local_path}{im}')
+    await download_image(data_src, path)
+
 
 async def generate_cookie_image_url(im: str):
     id = im.split('im')[1]
@@ -77,7 +104,7 @@ async def generate_cookie_image_url(im: str):
     return url
 
 
-async def download_with_im(im, local_path="image/"):
+async def download_with_im_(im, local_path="image\\"):
     print("下载", im)
     url = await generate_cookie_image_url(im)
     png = ['png', 'jpeg', 'gif']
@@ -97,10 +124,17 @@ async def download_with_im(im, local_path="image/"):
         tasks = pending
 
 
-async def download_muti_im(im_list: list, local="image/"):
+async def download_muti_im(im_list: list, local="image\\"):
     print("多下载")
     tasks = [asyncio.create_task(
         download_with_im(im, local)
+    ) for im in im_list]
+    done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
+    return done
+async def download_muti_im_(im_list: list, local="image\\"):
+    print("多下载")
+    tasks = [asyncio.create_task(
+        download_with_im_(im, local)
     ) for im in im_list]
     done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
     return done
@@ -108,16 +142,28 @@ async def download_muti_im(im_list: list, local="image/"):
 
 class Cookie_image_getter:
     def __init__(self, tag="クッキー☆"):
-        print("初始化中")
         self.tag = tag
-        self.random_cookie_list = get_cookie_elements(self.tag)
+        self.random_cookie_list = []
         self.completed = []
+
+    async def initial(self):
+        self.check_usable()
+        print("初始化")
+        self.random_cookie_list = get_cookie_elements(self.tag)
+        await self.pick_some_cookies_to_download(4)
         print("初始化完毕")
+
+    def check_usable(self):
+        if self.random_cookie_list is []:
+            raise IndexError
 
     async def pick_some_cookies_to_download(self, some=5):
         selected_elements = random.sample(self.random_cookie_list, some)
         self.random_cookie_list = [elem for elem in self.random_cookie_list if elem not in selected_elements]
-        await download_muti_im(selected_elements)
+        try:
+            await download_muti_im(selected_elements)
+        except Exception:
+            await download_muti_im_(selected_elements)
         self.completed += selected_elements
 
     async def send_random_cookie(self, bot: Bot, event: Event):
@@ -127,10 +173,8 @@ class Cookie_image_getter:
             return
         print(self.completed)
         elem = random.sample(self.completed, 1)[0]
-        # TODO:怎么选择啊啊啊啊啊啊
         image_path = os.path.abspath('image')
-        print(elem, glob.glob(f'{image_path}/{elem}.*'))
-        file_path = glob.glob(f'{image_path}/{elem}.*')[0]
+        file_path = f'{image_path}/{elem}'
         await send_image_from_ab_path(bot, event, file_path)
         self.completed.remove(elem)
         os.remove(file_path)
@@ -140,11 +184,11 @@ class Cookie_image_getter:
     def check_reload(self):
         if len(self.random_cookie_list) < 10:
             self.random_cookie_list += get_cookie_elements(self.tag)
+            self.pick_some_cookies_to_download(2)
 
 
 if __name__ == '__main__':
-    a = asyncio.run(get_im_date_info("11016372"))
-    print(a)
-    # b = Cookie_image_getter()
+    b = Cookie_image_getter()
+    asyncio.run(b.initial())
     pass
 
