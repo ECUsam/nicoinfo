@@ -99,6 +99,7 @@ async def download_with_im(im, local_path="image\\"):
     await download_image(data_src, path)
 
 
+
 async def generate_cookie_image_url(im: str):
     id = im.split('im')[1]
     date = await get_im_date_info(id)
@@ -160,7 +161,7 @@ class Cookie_image_getter:
             except Exception:
                 print("网络错误，3s后进行重试")
                 import time
-                time.sleep(3)
+                await asyncio.sleep(3)
         print("初始化完毕")
 
     def check_usable(self):
