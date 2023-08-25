@@ -32,9 +32,7 @@ init_thread.start()
 random_cookie_send = on_keyword({"随机饼图", "random cookie"}, block=True, priority=10)
 
 
-pending = asyncio.all_tasks()
-loop = asyncio.get_event_loop()
-loop.run_until_complete(asyncio.gather(*pending))
+
 
 @random_cookie_send.handle()
 async def r_c_s(bot: Bot, event: Event):

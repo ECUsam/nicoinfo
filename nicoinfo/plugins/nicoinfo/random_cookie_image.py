@@ -162,6 +162,11 @@ class Cookie_image_getter:
                 print("网络错误，3s后进行重试")
                 import time
                 await asyncio.sleep(3)
+
+            pending = asyncio.all_tasks()
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(asyncio.gather(*pending))
+
         print("初始化完毕")
 
     def check_usable(self):
