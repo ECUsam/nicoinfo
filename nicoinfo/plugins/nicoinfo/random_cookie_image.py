@@ -40,9 +40,12 @@ def to_year_and_month(date):
 
     return year, month
 
+def get_point_of_cookie(view, comment, clip, time):
+    pass
+
 
 def get_cookie_elements(tag: str, sort: str = "clip_created"):
-    page = random.randint(1, 15)
+    page = random.randint(1, 30)
     url = f"https://seiga.nicovideo.jp/tag/{tag}?sort={sort}&page={page}"
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers)
@@ -149,8 +152,15 @@ class Cookie_image_getter:
     async def initial(self):
         self.check_usable()
         print("初始化")
-        self.random_cookie_list = get_cookie_elements(self.tag)
-        await self.pick_some_cookies_to_download(4)
+        while True:
+            try:
+                self.random_cookie_list = get_cookie_elements(self.tag)
+                await self.pick_some_cookies_to_download(4)
+                break
+            except Exception:
+                print("网络错误，3s后进行重试")
+                import time
+                time.sleep(3)
         print("初始化完毕")
 
     def check_usable(self):
@@ -171,13 +181,16 @@ class Cookie_image_getter:
         if not self.completed:
             await bot.send(event, "初始化中，请稍后再试")
             return
-        print(self.completed)
+        # print(self.completed)
         elem = random.sample(self.completed, 1)[0]
         image_path = os.path.abspath('image')
         file_path = f'{image_path}/{elem}'
         await send_image_from_ab_path(bot, event, file_path)
-        self.completed.remove(elem)
-        os.remove(file_path)
+        try:
+            self.completed.remove(elem)
+            os.remove(file_path)
+        except PermissionError or ValueError:
+            pass
         asyncio.create_task(self.pick_some_cookies_to_download(1))
         self.check_reload()
 

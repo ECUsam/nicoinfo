@@ -35,7 +35,10 @@ random_cookie_send = on_keyword({"随机饼图", "random cookie"}, block=True, p
 @random_cookie_send.handle()
 async def r_c_s(bot: Bot, event: Event):
     if not init_thread.is_alive():
-        asyncio.create_task(a.send_random_cookie(bot, event))
+        try:
+            asyncio.create_task(a.send_random_cookie(bot, event))
+        except PermissionError or ValueError:
+            await bot.send(event, "操作频繁，请稍后重试")
     else:
         await bot.send(event, "初始化未完成，请等待片刻")
 
@@ -115,7 +118,8 @@ list	列出当前订阅
 订阅tag <n站tag> <生成的对应关键字>		订阅n站tag，订阅后发送关键字即可随机发送图片
 删除<n站tag>	删除订阅的tag，需要先订阅才能起效"""
 
-how_to_use = on_keyword({"bot用法", "机器人用法"}, block=False, priority=15)
+how_to_use = on_keyword({"bot用法", "机器人用法"}, block=False, priority=1)
 @how_to_use.handle()
 async def use_to_how(bot: Bot, event: Event):
+    print("机器人用法")
     await bot.send(event, use_inof)
