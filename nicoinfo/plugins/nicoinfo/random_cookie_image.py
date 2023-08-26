@@ -97,9 +97,6 @@ async def get_url_im_download(im):
     return data_src
 
 
-import os
-
-
 async def download_with_im(im, local_path="image"):
     print("下载", im)
     data_src = await get_url_im_download(im)
