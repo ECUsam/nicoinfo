@@ -193,6 +193,7 @@ class Cookie_image_getter:
             return
         # print(self.completed)
         elem = random.sample(self.completed, 1)[0]
+        print(elem, '发送')
         image_path = os.path.abspath('image')
         file_path = f'{image_path}/{elem}'
         await send_image_from_ab_path(bot, event, file_path)
