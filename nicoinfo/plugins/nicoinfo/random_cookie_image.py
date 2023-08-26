@@ -97,12 +97,15 @@ async def get_url_im_download(im):
     return data_src
 
 
+import os
+
+
 async def download_with_im(im, local_path="image"):
     print("下载", im)
     data_src = await get_url_im_download(im)
-    path = os.path.abspath(f'{local_path}{im}')
+    # 使用 os.path.join 来创建路径
+    path = os.path.abspath(os.path.join(local_path, im))
     await download_image(data_src, path)
-
 
 async def generate_cookie_image_url(im: str):
     id = im.split('im')[1]
