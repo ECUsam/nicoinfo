@@ -60,6 +60,8 @@ def get_cookie_elements(tag: str, sort: str = "clip_created"):
         for element in elements:
             im_hao = element.attrib['href'].split('/')[-1]
             im_list.append(im_hao)
+        if im_list == []:
+            return False
         return im_list
 
 
@@ -164,6 +166,9 @@ class Cookie_image_getter:
         while True:
             try:
                 self.random_cookie_list = get_cookie_elements(self.tag)
+                if not self.random_cookie_list:
+                    print("tag无效")
+                    raise Exception
                 await self.pick_some_cookies_to_download(4)
                 break
             except Exception:
