@@ -166,12 +166,12 @@ class Cookie_image_getter:
         while True:
             try:
                 self.random_cookie_list = get_cookie_elements(self.tag)
-                if not self.random_cookie_list:
-                    print("tag无效")
-                    raise Exception
                 await self.pick_some_cookies_to_download(4)
                 break
             except Exception:
+                if not self.random_cookie_list:
+                    print("tag无效")
+                    raise Exception
                 print("网络错误，3s后进行重试")
                 import time
                 await asyncio.sleep(3)
