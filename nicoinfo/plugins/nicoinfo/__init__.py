@@ -82,6 +82,9 @@ async def sub_tag(bot: Bot, event: Event):
     except Exception:
         await bot.send(event, "tag无效")
         return
+    if not b.random_cookie_list:
+        await bot.send(event, "tag无效")
+        return
 
     async def send_cookie_twice(bot, event):
         try:
@@ -104,6 +107,7 @@ async def sub_tag(bot: Bot, event: Event):
     @b_del.handle()
     async def def_b():
         del b
+        await bot.send(event, "已删除订阅")
     await asyncio.sleep(2)
     await bot.send(event, "订阅成功")
 
