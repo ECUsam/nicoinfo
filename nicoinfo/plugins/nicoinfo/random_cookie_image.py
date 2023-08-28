@@ -90,9 +90,11 @@ def get_image_url(base_url, file_id, possible_extensions):
 async def get_url_im_download(im):
     id = im.split("im")[1]
     url = f"https://seiga.nicovideo.jp/image/source/{id}"
-    async with ClientSession() as session:
-        async with session.get(url, headers=header) as response:
-            text = await response.text()
+    # async with ClientSession() as session:
+    #     async with session.get(url, headers=header) as response:
+    #         text = await response.text()
+
+    text = requests.get(url, headers=header).text
     soup = BeautifulSoup(text, "html.parser")
     div = soup.find("div", {"class": "illust_view_big"})
     data_src = div.get("data-src")

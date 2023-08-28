@@ -3,8 +3,6 @@ import threading
 import requests
 from bs4 import BeautifulSoup
 
-
-
 try:
     from utils import time_detect
     from wraps import repeat_every_30_seconds
@@ -134,7 +132,6 @@ class subscriber:
     def get_sub_list(self):
         return self.container.auth_list
 
-
     async def update_sub_list(self, suber):
         last_video = await detect_new_video(suber)
         if not last_video:
@@ -161,7 +158,7 @@ class subscriber:
         return subscriber_instance
 
     @repeat_every_30_seconds
-    async def continuously_update(self,):
+    async def continuously_update(self, ):
         results = await asyncio.gather(*(self.update_sub_list(suber) for suber in self.container.auth_list))
         if self.bot:
             for result in results:
@@ -178,7 +175,6 @@ async def subscribers_run(subscribers: dict[str, subscriber]):
 def start_asyncio_loop(loop, coroutine):
     asyncio.set_event_loop(loop)
     loop.run_until_complete(coroutine)
-
 
 
 async def main():
