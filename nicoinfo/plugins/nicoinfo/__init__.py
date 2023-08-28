@@ -16,15 +16,20 @@ config = Config.parse_obj(global_config)
 async def run_subscribe_update():
     await subscribers_run(get_info.subscriptions)
 
+def start_asyncio_loop_init(loop):
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
+
+new_loop = asyncio.new_event_loop()
+threading.Thread(target=start_asyncio_loop_init, args=(new_loop,)).start()
+
 
 def init_cookie_image_getter():
     global a
     a = Cookie_image_getter()
-    asyncio.run(a.initial())
+    new_loop.call_soon_threadsafe(asyncio.create_task, a.initial())
 
-
-new_loop = asyncio.new_event_loop()
-threading.Thread(target=start_asyncio_loop, args=(new_loop, run_subscribe_update())).start()
 
 init_thread = threading.Thread(target=init_cookie_image_getter)
 init_thread.start()
@@ -100,9 +105,10 @@ async def sub_tag(bot: Bot, event: Event):
             print(keyword_, "启动")
             asyncio.create_task(send_cookie_twice(bot, event))
 
-    b_del = on_keyword({"删除"+keyword_, "删除"+tag}, block=True, priority=9)
+    b_del = on_keyword({"删除"+keyword_, "删除"+tag}, block=True, priority=2)
     @b_del.handle()
     async def def_b():
+        print("")
         del b
         await bot.send(event, "已删除订阅")
     await asyncio.sleep(2)
