@@ -2,7 +2,7 @@ import asyncio
 import os
 import random
 
-from aiohttp import ClientSession
+# from aiohttp import ClientSession
 from nonebot.adapters.onebot.v11 import Bot, Event
 import aiohttp
 import requests
@@ -66,16 +66,25 @@ def get_cookie_elements(tag: str, sort: str = "clip_created"):
 
 
 async def download_image(url, local_path):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                directory = os.path.dirname(local_path)
-                if not os.path.exists(directory):
-                    os.makedirs(directory)
-                with open(local_path, 'wb') as file:
-                    file.write(await response.read())
-            else:
-                return False
+    # async with aiohttp.ClientSession() as session:
+    #     async with session.get(url) as response:
+    #         if response.status == 200:
+    #             directory = os.path.dirname(local_path)
+    #             if not os.path.exists(directory):
+    #                 os.makedirs(directory)
+    #             with open(local_path, 'wb') as file:
+    #                 file.write(await response.read())
+    #         else:
+    #             return False
+    response = requests.get(url, headers=header)
+    if response.status_code == 200:
+        directory = os.path.dirname(local_path)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        with open(local_path, 'wb') as file:
+            file.write(response.content)
+    else:
+        return False
 
 
 def get_image_url(base_url, file_id, possible_extensions):
