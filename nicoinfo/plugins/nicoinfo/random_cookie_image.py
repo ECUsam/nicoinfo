@@ -43,12 +43,13 @@ def to_year_and_month(date):
     return year, month
 
 
-def get_point_of_cookie(view, comment, clip, time):
-    pass
+def get_point_of_cookie(count_list: list):
+    point = 1 * int(count_list[0]) + 10 * int(count_list[1]) + 50 * int(count_list[2])
+    return point
 
 
-def get_cookie_elements(tag: str, sort: str = "clip_created"):
-    page = random.randint(1, 30)
+def get_cookie_elements(tag: str, sort: str = "clip_created", least_point=5000):
+    page = random.randint(1, 50)
     url = f"https://seiga.nicovideo.jp/tag/{tag}?sort={sort}&page={page}"
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers)
@@ -58,8 +59,11 @@ def get_cookie_elements(tag: str, sort: str = "clip_created"):
         im_list = []
         elements = root.xpath('//li[@class="list_item list_no_trim2"]/a')
         for element in elements:
+            lllust = element.xpath('.//ul[@class="illust_count"]/li/text()')
+            point = get_point_of_cookie(lllust)
             im_hao = element.attrib['href'].split('/')[-1]
-            im_list.append(im_hao)
+            if point >= least_point:
+                im_list.append(im_hao)
         if im_list == []:
             return False
         return im_list
@@ -176,7 +180,9 @@ class Cookie_image_getter:
         print("初始化")
         while True:
             try:
-                self.random_cookie_list = get_cookie_elements(self.tag)
+                # self.random_cookie_list = get_cookie_elements(self.tag)
+                await self.get_cookie_elements_to_num()
+                print(self.random_cookie_list)
                 await self.pick_some_cookies_to_download(4)
                 break
             except Exception:
@@ -188,6 +194,10 @@ class Cookie_image_getter:
                 await asyncio.sleep(3)
 
         print("初始化完毕")
+
+    async def get_cookie_elements_to_num(self, num=20):
+        while len(self.random_cookie_list) < num:
+            self.random_cookie_list += get_cookie_elements(self.tag)
 
     def check_usable(self):
         if self.random_cookie_list is []:
