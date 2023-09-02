@@ -68,7 +68,7 @@ class BB_susume:
                     point = get_point_of_video(view, comment, like, mylist)
                     log_time = math.log(time_difference_from_now(date), 36000000)
                     url = f"https://www.nicovideo.jp/watch/{sm}"
-                    sm_dic[sm] = {'point': int(point / log_time), 'title': title, 'date_info': date, 'sm': sm, 'url': url}
+                    sm_dic[sm] = {'point': int(point / log_time), 'title': title, 'date_info': date, 'sm': sm, 'url': url, 'view': view, 'comment': comment}
                     # print(title, int(point / log_time))
             sorted_sm = sorted(sm_dic.keys(), key=lambda key: sm_dic[key]['point'], reverse=True)
             for i in range(num):
