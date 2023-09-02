@@ -77,10 +77,11 @@ class BB_susume:
 
 
 class susume_bot:
-    def __init__(self, tag="BBクッキー☆劇場"):
+    def __init__(self, tag="BBクッキー☆劇場", member=0):
         self.tag = tag
         self.susume_func = BB_susume(self.tag)
         self.sub_list = {}
+        self.member = member
         """
         sub_list: 
             member:{
@@ -112,7 +113,7 @@ class susume_bot:
         chat_id = get_chat_id(event)
         if chat_id not in self.sub_list:
             self.sub_list[chat_id] = {'is_private': event.is_tome(), 'susume_list': self.susume_func.susume_list, 'susumeta': self.susume_func.susumeta}
-        from nicoinfo.plugins.nicoinfo.usage import send_last_video_to_private_or_group as send_message
+        from nicoinfo.plugins.nicoinfo.usage import send_last_video_to_private_or_group_BBsusume as send_message
         await send_message(bot, chat_id, last, event.is_tome())
 
 

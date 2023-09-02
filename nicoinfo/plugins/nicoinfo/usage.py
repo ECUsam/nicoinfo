@@ -147,6 +147,23 @@ async def send_last_video_to_private_or_group(bot: Bot, event_id, last_video: di
         await bot.send_group_msg(group_id=event_id, message=message)
 
 
+def video_info_to_str_BBsusume(last: dict):
+    return f"""视频标题: {last['title']}
+视频日期: {last['date_info']}
+sm号:{last['sm']}"""
+
+async def send_last_video_to_private_or_group_BBsusume(bot: Bot, event_id, last_video: dict, is_private: bool):
+    text = video_info_to_str_BBsusume(last_video)
+    local_image_path = await get_samune_from_video(last_video)
+    ab_local_image_path = os.path.abspath(local_image_path)
+    local_image = MessageSegment.image(f"file:///{ab_local_image_path}")
+    message = Message(text + local_image)
+    if is_private:
+        await bot.send_private_msg(user_id=event_id, message=message)
+    else:
+        await bot.send_group_msg(group_id=event_id, message=message)
+
+
 async def send_last_video_to_private_or_group_fast(bot: Bot, event_id, last_video: dict, is_private: bool):
     text = video_info_to_str(last_video)
     if is_private:

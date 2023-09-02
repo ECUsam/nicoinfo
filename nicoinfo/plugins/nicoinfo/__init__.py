@@ -51,7 +51,8 @@ random_cookie_video = on_keyword({"随机剧场", "random video"}, block=True, p
 
 @random_cookie_video.handle()
 async def r_c_v(bot: Bot, event: Event):
-    pass
+    global video_getter
+    asyncio.create_task(video_getter.send_random_video_to_bot(bot, event))
 
 
 random_cookie_send = on_keyword({"随机饼图", "random cookie"}, block=True, priority=10)
