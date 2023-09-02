@@ -222,7 +222,15 @@ class Cookie_image_getter:
         print(elem, '发送')
         image_path = os.path.abspath('image')
         file_path = f'{image_path}/{elem}'
-        await send_image_from_ab_path(bot, event, file_path)
+        i = 0
+        while i < 3:
+            try:
+                await send_image_from_ab_path(bot, event, file_path)
+                i += 10
+            except Exception:
+                i += 1
+        if i == 3:
+            await bot.send(event, "发送失败，请重试")
         try:
             self.completed.remove(elem)
             os.remove(file_path)
