@@ -1,9 +1,17 @@
 [project]
 name = "nicoinfo"
-version = "0.1.0"
-description = "nicoinfo"
+version = "1.0.0"
+description = "n站饼图推送"
 readme = "README.md"
 requires-python = ">=3.8, <4.0"
+
+[tool.poetry]
+name = "nicoinfo"
+version = "1.0.0"
+description = "n站饼图推送"
+authors = ["ECUsam <1254281150@qq.com>"]
+readme = "README.md"
+
 
 [tool.nonebot]
 adapters = [

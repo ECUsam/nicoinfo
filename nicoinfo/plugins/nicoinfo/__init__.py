@@ -13,6 +13,29 @@ from .random_cookie_image import Cookie_image_getter
 from .usage import load_subscriptions
 from .utils import get_chat_id
 
+
+from nonebot.plugin import PluginMetadata
+
+from .config import Config
+
+__plugin_meta__ = PluginMetadata(
+    name="n站信息发送-cookie",
+    description="发送n站剧场和静画信息，默认发送cookie tag下的内容",
+    usage="""指令列表（需要管理员权限）
+<>为必填参数（可填多个）--为选填参数（不必写--）
+last <user_uid> --fast	获取作者的最新投稿，选--fast不发送封面
+sub <user_uid>	订阅作者
+desub <user_uid>	取消订阅
+list	列出当前订阅
+关键字列表（任何人都可以使用）
+随机剧场  随机发送剧场信息
+随机饼图	随机发送一张饼图
+订阅tag <n站tag> <生成的对应关键字>		订阅n站tag，订阅后发送关键字即可随机发送图片
+删除<n站tag>	删除订阅的tag，需要先订阅才能起效""",
+    config=Config,
+)
+
+
 global_config = get_driver().config
 config = Config.parse_obj(global_config)
 

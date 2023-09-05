@@ -48,8 +48,8 @@ def get_point_of_cookie(count_list: list):
     return point
 
 
-def get_cookie_elements(tag: str, sort: str = "clip_created", least_point=5000):
-    page = random.randint(1, 50)
+def get_cookie_elements(tag: str, sort: str = "image_view", least_point=20000):
+    page = random.randint(1, 200)
     url = f"https://seiga.nicovideo.jp/tag/{tag}?sort={sort}&page={page}"
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers)
