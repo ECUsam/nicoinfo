@@ -11,7 +11,7 @@ from datetime import datetime
 from lxml import etree
 
 try:
-    from nicoinfo.plugins.nicoinfo.usage import send_image_from_ab_path
+    from nicoinfo.plugins.nicoinfo.usage import send_image_from_ab_path, is_full_color
     from nicoinfo.plugins.nicoinfo.wraps import retry_async
 except ValueError:
     from wraps import retry_async
@@ -44,7 +44,7 @@ def to_year_and_month(date):
 
 
 def get_point_of_cookie(count_list: list):
-    point = 1 * int(count_list[0]) + 10 * int(count_list[1]) + 50 * int(count_list[2])
+    point = 1 * int(count_list[0]) + 2 * int(count_list[1]) + 200 * int(count_list[2])
     return point
 
 
@@ -168,16 +168,18 @@ async def download_muti_im_(im_list: list, local="image"):
     done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
     return done
 
-
+import json
 class Cookie_image_getter:
     def __init__(self, tag="クッキー☆"):
         self.tag = tag
         self.random_cookie_list = []
         self.completed = []
+        self.sended = []
 
     async def initial(self):
         self.check_usable()
         print("初始化")
+        self.load_sended()
         while True:
             try:
                 # self.random_cookie_list = get_cookie_elements(self.tag)
@@ -195,15 +197,33 @@ class Cookie_image_getter:
 
         print("初始化完毕")
 
+    def save_to_json(self):
+        print("保存json", self.sended)
+        with open("json_sended.json", 'w') as f:
+            json.dump(self.sended, f)
+
+    def load_sended(self):
+        if os.path.exists("json_sended.json"):
+            print("加载json")
+            with open("json_sended.json", 'r') as f:
+                self.sended += json.load(f)
+
+    def get_out_of_sended(self):
+        for elem in self.random_cookie_list:
+            if elem in self.sended:
+                self.random_cookie_list.remove(elem)
+
     async def get_cookie_elements_to_num(self, num=20):
         while len(self.random_cookie_list) < num:
             self.random_cookie_list += get_cookie_elements(self.tag)
+            self.get_out_of_sended()
 
     def check_usable(self):
         if self.random_cookie_list is []:
             raise IndexError
 
     async def pick_some_cookies_to_download(self, some=5):
+        self.get_out_of_sended()
         selected_elements = random.sample(self.random_cookie_list, some)
         self.random_cookie_list = [elem for elem in self.random_cookie_list if elem not in selected_elements]
         try:
@@ -222,6 +242,17 @@ class Cookie_image_getter:
         print(elem, '发送')
         image_path = os.path.abspath('image')
         file_path = f'{image_path}/{elem}'
+        if not is_full_color(file_path):
+            try:
+                print("重新发送")
+                self.completed.remove(elem)
+                os.remove(file_path)
+            except PermissionError or ValueError:
+                pass
+            asyncio.create_task(self.pick_some_cookies_to_download(1))
+            self.check_reload()
+            await self.send_random_cookie(bot, event)
+            return
         i = 0
         while i < 3:
             try:
@@ -236,13 +267,16 @@ class Cookie_image_getter:
             os.remove(file_path)
         except PermissionError or ValueError:
             pass
+        self.sended.append(elem)
+        self.save_to_json()
         asyncio.create_task(self.pick_some_cookies_to_download(1))
         self.check_reload()
 
     def check_reload(self):
-        if len(self.random_cookie_list) < 10:
+        while len(self.random_cookie_list) < 20:
             self.random_cookie_list += get_cookie_elements(self.tag)
             self.pick_some_cookies_to_download(2)
+            self.get_out_of_sended()
 
 
 if __name__ == '__main__':

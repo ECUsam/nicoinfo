@@ -170,3 +170,23 @@ async def send_last_video_to_private_or_group_fast(bot: Bot, event_id, last_vide
         await bot.send_private_msg(user_id=event_id, message=text)
     else:
         await bot.send_group_msg(group_id=event_id, message=text)
+
+from PIL import Image
+
+def is_full_color(image_path):
+    try:
+        # 打开图像
+        with Image.open(image_path) as img:
+            # 如果图像不是RGB或RGBA格式，则它不是全彩色的
+            if img.mode not in ['RGB', 'RGBA']:
+                return False
+            # 获取图像的三个通道
+            r, g, b = img.split()
+            # 检查每个通道的最大和最小值，以确定是否存在颜色变化
+            for channel in [r, g, b]:
+                if channel.getextrema() == (0, 0) or channel.getextrema() == (255, 255):
+                    return False
+            return True
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return False
