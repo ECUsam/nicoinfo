@@ -220,7 +220,6 @@ class Cookie_image_getter:
             await download_muti_im_(selected_elements)
         self.completed += selected_elements
         # bug maybe
-        await self.check_and_remove_no_color()
 
     async def check_and_remove_no_color(self):
         image_path = os.path.abspath('image')
