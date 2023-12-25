@@ -219,6 +219,8 @@ class Cookie_image_getter:
         except Exception:
             await download_muti_im_(selected_elements)
         self.completed += selected_elements
+        # bug maybe
+        self.check_and_remove_no_color()
 
     def check_and_remove_no_color(self):
         image_path = os.path.abspath('image')
@@ -234,18 +236,17 @@ class Cookie_image_getter:
         if not self.completed:
             await asyncio.sleep(2)
             while not self.completed:
+                asyncio.create_task(self.pick_some_cookies_to_download(1))
                 await asyncio.sleep(2)
         elem = random.sample(self.completed, 1)[0]
         print(elem, '发送')
         image_path = os.path.abspath('image')
         file_path = f'{image_path}/{elem}'
-        i = 0
-        while i < 3:
-            try:
-                await send_image_from_ab_path(bot, event, file_path)
-                i += 10
-            except Exception:
-                i += 1
+        try:
+            asyncio.create_task(send_image_from_ab_path(bot, event, file_path))
+        except Exception:
+            print("发送失败245")
+            asyncio.create_task(send_image_from_ab_path(bot, event, file_path))
         try:
             self.completed.remove(elem)
             os.remove(file_path)
