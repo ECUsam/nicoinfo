@@ -170,21 +170,18 @@ class Cookie_image_getter:
         self.check_usable()
         print("初始化")
         self.load_sended()
-        while True:
-            try:
-                # self.random_cookie_list = get_cookie_elements(self.tag)
-                await self.get_cookie_elements_to_num(max_page=self.max_page)
-                print(self.random_cookie_list)
-                await self.pick_some_cookies_to_download(4)
-                break
-            except Exception:
-                if not self.random_cookie_list:
-                    print("tag无效")
-                    raise Exception
-                print("网络错误，3s后进行重试")
-                import time
-                await asyncio.sleep(3)
-
+        try:
+            # self.random_cookie_list = get_cookie_elements(self.tag)
+            await self.get_cookie_elements_to_num(max_page=self.max_page)
+            print(self.random_cookie_list)
+            await self.pick_some_cookies_to_download(4)
+        except Exception:
+            if not self.random_cookie_list:
+                print("tag无效")
+                raise Exception
+            print("网络错误，3s后进行重试")
+            import time
+            await asyncio.sleep(3)
         print("初始化完毕")
 
     def save_to_json(self):
@@ -213,7 +210,7 @@ class Cookie_image_getter:
             raise IndexError
 
     async def pick_some_cookies_to_download(self, some=5):
-        if len(self.completed)>10:return
+        if len(self.completed)>6:return
         self.get_out_of_sended()
         selected_elements = random.sample(self.random_cookie_list, some)
         self.random_cookie_list = [elem for elem in self.random_cookie_list if elem not in selected_elements]
