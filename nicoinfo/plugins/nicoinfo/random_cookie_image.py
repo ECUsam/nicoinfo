@@ -229,6 +229,11 @@ class Cookie_image_getter:
             if not is_full_color(file_path):
                 os.remove(file_path)
                 self.completed.remove(elem)
+        self.check_complete()
+
+    async def check_complete(self):
+        if len(self.completed) < 4:
+            await self.pick_some_cookies_to_download(4)
 
     async def send_random_cookie(self, bot: Bot, event: Event):
         print("随机饼图，启动")
