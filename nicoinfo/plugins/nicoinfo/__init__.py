@@ -89,9 +89,11 @@ async def r_c_s(bot: Bot, event: Event):
         try:
             asyncio.create_task(a.send_random_cookie(bot, event))
         except PermissionError or ValueError:
-            await bot.send(event, "操作频繁，请稍后重试")
+            pass
+            # await bot.send(event, "操作频繁，请稍后重试")
     else:
-        await bot.send(event, "初始化未完成，请等待片刻")
+        pass
+        # await bot.send(event, "初始化未完成，请等待片刻")
 
 
 start_update = on_keyword({"启动订阅更新", "启动订阅"}, block=True)

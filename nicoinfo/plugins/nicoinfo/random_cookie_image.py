@@ -240,9 +240,9 @@ class Cookie_image_getter:
                 os.remove(file_path)
             except PermissionError or ValueError:
                 pass
+            await self.send_random_cookie(bot, event)
             asyncio.create_task(self.pick_some_cookies_to_download(1))
             self.check_reload()
-            await self.send_random_cookie(bot, event)
             return
         i = 0
         while i < 3:
