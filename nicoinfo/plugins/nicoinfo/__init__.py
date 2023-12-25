@@ -87,7 +87,8 @@ random_cookie_send = on_keyword({"随机饼图", "random cookie"}, block=True, p
 async def r_c_s(bot: Bot, event: Event):
     if not init_thread.is_alive():
         try:
-            asyncio.create_task(a.send_random_cookie(bot, event))
+            # asyncio.create_task(a.send_random_cookie(bot, event))
+            await a.send_random_cookie(bot, event)
         except PermissionError or ValueError:
             await bot.send(event, "操作频繁，请稍后重试")
     else:
