@@ -1,10 +1,12 @@
 import asyncio
+import json
 import random
 from datetime import datetime
 import requests
 from lxml import etree
 import math
 from nonebot.adapters.onebot.v11 import Bot, Event
+import time
 
 def get_chat_id(event: Event):
     return str(event.get_user_id()) if event.is_tome() else str(event.group_id)
@@ -37,7 +39,7 @@ class BB_susume:
     def __init__(self, tag="BBクッキー☆劇場", sort='h'):
         self.tag = tag
         self.link = "https://www.nicovideo.jp/tag/" + tag
-        self.susumeta = []  # 会话：[已推荐列表]
+        # self.susumeta = []  # 会话：[已推荐列表]
         self.susume_list = {}
         self.sort = sort
 
@@ -46,7 +48,7 @@ class BB_susume:
             self.get_random_video(5)
 
     def get_random_video(self, num=5):
-        page = random.randint(1, 20)
+        page = random.randint(1, 200)
         headers = {'User-Agent': 'Mozilla/5.0'}
         response = requests.get(self.link + f"?page={page}&sort={self.sort}&order=d", headers=headers)
         # print(self.link + f"?page={page}&sort={self.sort}&order=d")
@@ -62,13 +64,16 @@ class BB_susume:
                     date = element.xpath('.//span[@class="time"]/text()')[0]
                     title = element.xpath('.//a[@title]/text()')[0]
                     view = element.xpath('.//li[@class="count view"]/span/text()')[0].replace(',', '')
+                    if int(view) > 300000:
+                        break
                     comment = element.xpath('.//li[@class="count comment"]/span/text()')[0].replace(',', '')
                     like = element.xpath('.//li[@class="count like"]/span/text()')[0].replace(',', '')
                     mylist = element.xpath('.//li[@class="count mylist"]/span/text()')[0].replace(',', '')
+                    video_length = element.xpath('.//span[@class="videoLength"]/text()')[0].replace(',', '')
                     point = get_point_of_video(view, comment, like, mylist)
-                    log_time = math.log(time_difference_from_now(date), 36000000)
+                    log_time = math.log(time_difference_from_now(date), 72000000)
                     url = f"https://www.nicovideo.jp/watch/{sm}"
-                    sm_dic[sm] = {'point': int(point / log_time), 'title': title, 'date_info': date, 'sm': sm, 'url': url, 'view': view, 'comment': comment}
+                    sm_dic[sm] = {'point': int(point / (log_time ** 4)), 'title': title, 'date_info': date, 'sm': sm, 'url': url, 'view': view, 'comment': comment, 'video_length': video_length}
                     # print(title, int(point / log_time))
             sorted_sm = sorted(sm_dic.keys(), key=lambda key: sm_dic[key]['point'], reverse=True)
             for i in range(num):
@@ -80,15 +85,16 @@ class susume_bot:
     def __init__(self, tag="BBクッキー☆劇場", member=0):
         self.tag = tag
         self.susume_func = BB_susume(self.tag)
-        self.sub_list = {}
+        # self.sub_list = {}
         self.member = member
+        self.susumeta = {} # member: [(sm, last_susume), ]
         """
         sub_list: 
             member:{
                 is_private
                 is_open
                 susume_list
-                susumeta
+                susumeta :{sm: last_susume}
             }
         """
         self.bot = None
@@ -105,29 +111,40 @@ class susume_bot:
         random_video = self.susume_func.susume_list[random_sm]
         des = video_info_to_str(random_video)
         del self.susume_func.susume_list[random_sm]
-        self.susume_func.susumeta.append(random_sm)
         return des, random_video
+
+    def check_if_susumeta_in_3_day(self, sm, chat_id):
+        if chat_id in self.susumeta:
+            if sm in self.susumeta[chat_id]:
+                old_time = self.susumeta[chat_id][sm]
+                current_timestamp = time.time()
+                if current_timestamp - old_time <= 1678224000:
+                    return True
+        return False
+
 
     async def send_random_video_to_bot(self, bot: Bot, event: Event):
         des, last = await self.get_random_video_info()
         chat_id = get_chat_id(event)
-        if chat_id not in self.sub_list:
-            self.sub_list[chat_id] = {'is_private': event.is_tome(), 'susume_list': self.susume_func.susume_list, 'susumeta': self.susume_func.susumeta}
+        if self.check_if_susumeta_in_3_day(last['sm'], chat_id):
+            asyncio.create_task(self.send_random_video_to_bot(bot, event))
+            return
+        if chat_id not in self.susumeta:
+            self.susumeta[chat_id] = []
+        self.susumeta[chat_id].append({last['sm']: time.time()})
         from nicoinfo.plugins.nicoinfo.usage import send_last_video_to_private_or_group_BBsusume as send_message
         await send_message(bot, chat_id, last, event.is_tome())
+        self.class_save_to_json()
 
-
-    def get_json_data(self):
-        subscriber_json = {
-            'tag': self.tag,
-            'sub_list': self.sub_list
-        }
-        return subscriber_json
+    def class_save_to_json(self):
+        json_data = {'tag': self.tag, 'susumeta': self.susumeta}
+        with open('video_getter.json', 'w') as f:
+            json.dump(json_data, f)
 
     @staticmethod
     def json_to_class(json: dict):
         subscriber_instance = susume_bot(json['tag'])
-        subscriber_instance.sub_list = json['sub_list']
+        subscriber_instance.susumeta = json['susumeta']
         return subscriber_instance
 
 

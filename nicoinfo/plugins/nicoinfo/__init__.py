@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import threading
 from nonebot import get_driver, on_keyword
@@ -64,7 +65,8 @@ init_thread.start()
 
 video_getter_json_name = "video_getter.json"
 if os.path.exists(video_getter_json_name):
-    video_getter_data = load_subscriptions(video_getter_json_name)
+    with open(video_getter_json_name, 'r') as f:
+        video_getter_data = json.load(f)
     video_getter = susume_bot.json_to_class(video_getter_data)
 else:
     video_getter = susume_bot()
@@ -132,8 +134,8 @@ async def sub_tag(bot: Bot, event: Event):
         await bot.send(event, "参数错误")
         return
     try:
-        b = Cookie_image_getter(tag=tag)
-        asyncio.create_task(b.initial())
+        b = Cookie_image_getter(tag=tag, max_page=10)
+        new_loop.call_soon_threadsafe(asyncio.create_task, b.initial())
     except Exception:
         await bot.send(event, "tag无效")
         return

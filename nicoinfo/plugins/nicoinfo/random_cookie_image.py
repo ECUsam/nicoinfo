@@ -48,8 +48,8 @@ def get_point_of_cookie(count_list: list):
     return point
 
 
-def get_cookie_elements(tag: str, sort: str = "image_view", least_point=20000):
-    page = random.randint(1, 200)
+def get_cookie_elements(tag: str, sort: str = "image_view", least_point=20000, max_page=100):
+    page = random.randint(1, max_page)
     url = f"https://seiga.nicovideo.jp/tag/{tag}?sort={sort}&page={page}"
     headers = {'User-Agent': 'Mozilla/5.0'}
     response = requests.get(url, headers=headers)
@@ -64,22 +64,16 @@ def get_cookie_elements(tag: str, sort: str = "image_view", least_point=20000):
             im_hao = element.attrib['href'].split('/')[-1]
             if point >= least_point:
                 im_list.append(im_hao)
-        if im_list == []:
+        if not im_list:
+            print(url)
+            print(response.content)
             return False
         return im_list
+    else:
+        print(response.status_code, url)
 
 
 async def download_image(url, local_path):
-    # async with aiohttp.ClientSession() as session:
-    #     async with session.get(url) as response:
-    #         if response.status == 200:
-    #             directory = os.path.dirname(local_path)
-    #             if not os.path.exists(directory):
-    #                 os.makedirs(directory)
-    #             with open(local_path, 'wb') as file:
-    #                 file.write(await response.read())
-    #         else:
-    #             return False
     response = requests.get(url, headers=header)
     if response.status_code == 200:
         directory = os.path.dirname(local_path)
@@ -103,10 +97,6 @@ def get_image_url(base_url, file_id, possible_extensions):
 async def get_url_im_download(im):
     id = im.split("im")[1]
     url = f"https://seiga.nicovideo.jp/image/source/{id}"
-    # async with ClientSession() as session:
-    #     async with session.get(url, headers=header) as response:
-    #         text = await response.text()
-
     text = requests.get(url, headers=header).text
     soup = BeautifulSoup(text, "html.parser")
     div = soup.find("div", {"class": "illust_view_big"})
@@ -133,7 +123,6 @@ async def download_with_im_(im, local_path="image"):
     print("下载", im)
     url = await generate_cookie_image_url(im)
     png = ['png', 'jpeg', 'gif']
-
     # 这里使用 os.path.join 方法来构建路径
     tasks = [asyncio.create_task(
         download_image(url + "." + ext, os.path.abspath(os.path.join(local_path, f'{im}.{ext}'))))
@@ -170,11 +159,12 @@ async def download_muti_im_(im_list: list, local="image"):
 
 import json
 class Cookie_image_getter:
-    def __init__(self, tag="クッキー☆"):
+    def __init__(self, tag="クッキー☆", max_page=100):
         self.tag = tag
         self.random_cookie_list = []
         self.completed = []
         self.sended = []
+        self.max_page = max_page
 
     async def initial(self):
         self.check_usable()
@@ -183,7 +173,7 @@ class Cookie_image_getter:
         while True:
             try:
                 # self.random_cookie_list = get_cookie_elements(self.tag)
-                await self.get_cookie_elements_to_num()
+                await self.get_cookie_elements_to_num(max_page=self.max_page)
                 print(self.random_cookie_list)
                 await self.pick_some_cookies_to_download(4)
                 break
@@ -213,9 +203,9 @@ class Cookie_image_getter:
             if elem in self.sended:
                 self.random_cookie_list.remove(elem)
 
-    async def get_cookie_elements_to_num(self, num=20):
+    async def get_cookie_elements_to_num(self, num=20, max_page=100):
         while len(self.random_cookie_list) < num:
-            self.random_cookie_list += get_cookie_elements(self.tag)
+            self.random_cookie_list += get_cookie_elements(self.tag, max_page=max_page)
             self.get_out_of_sended()
 
     def check_usable(self):
@@ -235,8 +225,9 @@ class Cookie_image_getter:
     async def send_random_cookie(self, bot: Bot, event: Event):
         print("随机饼图，启动")
         if not self.completed:
-            await bot.send(event, "初始化中，请稍后再试")
-            return
+            await asyncio.sleep(2)
+            while not self.completed:
+                await asyncio.sleep(2)
         # print(self.completed)
         elem = random.sample(self.completed, 1)[0]
         print(elem, '发送')
@@ -274,8 +265,8 @@ class Cookie_image_getter:
 
     def check_reload(self):
         while len(self.random_cookie_list) < 20:
-            self.random_cookie_list += get_cookie_elements(self.tag)
-            self.pick_some_cookies_to_download(2)
+            self.random_cookie_list += get_cookie_elements(self.tag, max_page=self.max_page)
+            asyncio.create_task(self.pick_some_cookies_to_download(2))
             self.get_out_of_sended()
 
 

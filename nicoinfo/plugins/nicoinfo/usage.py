@@ -150,7 +150,7 @@ async def send_last_video_to_private_or_group(bot: Bot, event_id, last_video: di
 def video_info_to_str_BBsusume(last: dict):
     return f"""视频标题: {last['title']}
 视频日期: {last['date_info']}  sm号:{last['sm']}
-播放量：{last['view']}  评分：{last['point']}  弹幕数：{last['comment']}"""
+播放量：{last['view']}  时长：{last['video_length']}  弹幕数：{last['comment']}"""
 
 async def send_last_video_to_private_or_group_BBsusume(bot: Bot, event_id, last_video: dict, is_private: bool):
     text = video_info_to_str_BBsusume(last_video)
