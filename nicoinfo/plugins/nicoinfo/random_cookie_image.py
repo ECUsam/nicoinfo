@@ -213,6 +213,7 @@ class Cookie_image_getter:
             raise IndexError
 
     async def pick_some_cookies_to_download(self, some=5):
+        if len(self.completed)>10:return
         self.get_out_of_sended()
         selected_elements = random.sample(self.random_cookie_list, some)
         self.random_cookie_list = [elem for elem in self.random_cookie_list if elem not in selected_elements]
@@ -228,7 +229,6 @@ class Cookie_image_getter:
             await asyncio.sleep(2)
             while not self.completed:
                 await asyncio.sleep(2)
-        # print(self.completed)
         elem = random.sample(self.completed, 1)[0]
         print(elem, '发送')
         image_path = os.path.abspath('image')
@@ -251,8 +251,6 @@ class Cookie_image_getter:
                 i += 10
             except Exception:
                 i += 1
-        if i == 3:
-            await bot.send(event, "发送失败，请重试")
         try:
             self.completed.remove(elem)
             os.remove(file_path)
