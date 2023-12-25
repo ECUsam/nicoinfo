@@ -141,7 +141,7 @@ async def download_with_im_(im, local_path="image"):
 
 
 async def download_muti_im(im_list: list, local="image"):
-    print("多下载")
+    print("多下载download_muti_im")
     tasks = [asyncio.create_task(
         download_with_im(im, local)
     ) for im in im_list]
@@ -150,7 +150,7 @@ async def download_muti_im(im_list: list, local="image"):
 
 
 async def download_muti_im_(im_list: list, local="image"):
-    print("多下载")
+    print("多下载download_muti_im_")
     tasks = [asyncio.create_task(
         download_with_im_(im, local)
     ) for im in im_list]
@@ -220,6 +220,7 @@ class Cookie_image_getter:
             await download_muti_im_(selected_elements)
         self.completed += selected_elements
         # bug maybe
+        await self.check_and_remove_no_color()
 
     async def check_and_remove_no_color(self):
         image_path = os.path.abspath('image')
@@ -229,6 +230,7 @@ class Cookie_image_getter:
                 os.remove(file_path)
                 self.completed.remove(elem)
         await self.check_complete()
+
 
     async def check_complete(self):
         if len(self.completed) < 4:
