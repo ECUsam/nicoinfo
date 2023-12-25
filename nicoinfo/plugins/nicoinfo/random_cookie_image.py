@@ -48,7 +48,7 @@ def get_point_of_cookie(count_list: list):
     return point
 
 
-def get_cookie_elements(tag: str, sort: str = "image_view", least_point=20000, max_page=100):
+def get_cookie_elements(tag: str, sort: str = "image_view", least_point=50000, max_page=100):
     page = random.randint(1, max_page)
     url = f"https://seiga.nicovideo.jp/tag/{tag}?sort={sort}&page={page}"
     headers = {'User-Agent': 'Mozilla/5.0'}
@@ -220,7 +220,7 @@ class Cookie_image_getter:
             await download_muti_im_(selected_elements)
         self.completed += selected_elements
         # bug maybe
-        await self.check_and_remove_no_color()
+        # await self.check_and_remove_no_color()
 
     async def check_and_remove_no_color(self):
         image_path = os.path.abspath('image')
