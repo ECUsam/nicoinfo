@@ -188,7 +188,7 @@ class Cookie_image_getter:
         print("初始化完毕")
 
     def save_to_json(self):
-        print("保存json", self.sended)
+        print("保存json")
         with open("json_sended.json", 'w') as f:
             json.dump(self.sended, f)
 
