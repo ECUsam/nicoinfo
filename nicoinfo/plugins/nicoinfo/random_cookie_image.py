@@ -229,7 +229,7 @@ class Cookie_image_getter:
             if not is_full_color(file_path):
                 os.remove(file_path)
                 self.completed.remove(elem)
-        self.check_complete()
+        await self.check_complete()
 
     async def check_complete(self):
         if len(self.completed) < 4:
@@ -237,7 +237,6 @@ class Cookie_image_getter:
 
     async def send_random_cookie(self, bot: Bot, event: Event):
         print("随机饼图，启动")
-        self.check_and_remove_no_color()
         if not self.completed:
             await asyncio.sleep(2)
             while not self.completed:
