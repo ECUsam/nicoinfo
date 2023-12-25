@@ -246,10 +246,10 @@ class Cookie_image_getter:
         image_path = os.path.abspath('image')
         file_path = f'{image_path}/{elem}'
         try:
-            asyncio.create_task(send_image_from_ab_path(bot, event, file_path))
+            await send_image_from_ab_path(bot, event, file_path)
         except Exception:
             print("发送失败245")
-            asyncio.create_task(send_image_from_ab_path(bot, event, file_path))
+            await send_image_from_ab_path(bot, event, file_path)
         try:
             self.completed.remove(elem)
             os.remove(file_path)
