@@ -121,6 +121,8 @@ async def generate_cookie_image_url(im: str):
 
 
 async def download_with_im_(im, local_path="image"):
+    if not os.path.exists(local_path):
+        os.mkdir(local_path)
     print("下载", im)
     url = await generate_cookie_image_url(im)
     png = ['png', 'jpeg', 'gif']
@@ -296,13 +298,15 @@ class cookie_download_thread(threading.Thread):
             self.random_cookie_list += get_cookie_elements(self.tag, max_page=self.max_page)
 
     def run(self):
+        if not os.path.exists("image_cookie"):
+            os.mkdir("image_cookie")
         while True:
             self.check_reload()
-            image_num = len(os.listdir("image"))
+            image_num = len(os.listdir("image_cookie"))
             if image_num < 8:
                 selected_elements = random.sample(self.random_cookie_list, 5)
                 self.random_cookie_list = [elem for elem in self.random_cookie_list if elem not in selected_elements]
-                download_muti_im(selected_elements)
+                download_muti_im(selected_elements, local="image_cookie")
 
 
 if __name__ == '__main__':
