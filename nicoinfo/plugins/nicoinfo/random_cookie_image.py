@@ -111,6 +111,7 @@ async def download_with_im(im, local_path="image"):
     path = os.path.abspath(os.path.join(local_path, im))
     await download_image(data_src, path)
 
+
 async def generate_cookie_image_url(im: str):
     id = im.split('im')[1]
     date = await get_im_date_info(id)
@@ -157,7 +158,10 @@ async def download_muti_im_(im_list: list, local="image"):
     done, pending = await asyncio.wait(tasks, return_when=asyncio.ALL_COMPLETED)
     return done
 
+
 import json
+
+
 class Cookie_image_getter:
     def __init__(self, tag="クッキー☆", max_page=100):
         self.tag = tag
@@ -209,7 +213,7 @@ class Cookie_image_getter:
             raise IndexError
 
     async def pick_some_cookies_to_download(self, some=5):
-        if len(self.completed)>6:return
+        if len(self.completed) > 6: return
         self.get_out_of_sended()
         selected_elements = random.sample(self.random_cookie_list, some)
         self.random_cookie_list = [elem for elem in self.random_cookie_list if elem not in selected_elements]
@@ -265,6 +269,10 @@ class Cookie_image_getter:
         image_path = os.path.abspath('image')
         file_path = os.path.join(image_path, elem)
         await send_image_from_ab_path(bot, event, file_path)
+        try:
+            os.remove(file_path)
+        except Exception:
+            pass
 
     def check_reload(self):
         while len(self.random_cookie_list) < 20:
@@ -272,7 +280,10 @@ class Cookie_image_getter:
             asyncio.create_task(self.pick_some_cookies_to_download(2))
             self.get_out_of_sended()
 
+
 import threading
+
+
 class cookie_download_thread(threading.Thread):
     def __init__(self, tag="クッキー☆", max_page=100):
         threading.Thread.__init__(self)
@@ -292,7 +303,6 @@ class cookie_download_thread(threading.Thread):
                 selected_elements = random.sample(self.random_cookie_list, 5)
                 self.random_cookie_list = [elem for elem in self.random_cookie_list if elem not in selected_elements]
                 download_muti_im(selected_elements)
-
 
 
 if __name__ == '__main__':
