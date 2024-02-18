@@ -40,6 +40,8 @@ list	列出当前订阅
 global_config = get_driver().config
 config = Config.parse_obj(global_config)
 
+thread = random_cookie_image.cookie_download_thread()
+thread.start()
 
 async def run_subscribe_update():
     await subscribers_run(get_info.subscriptions)

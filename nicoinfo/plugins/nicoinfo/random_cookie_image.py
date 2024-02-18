@@ -170,18 +170,17 @@ class Cookie_image_getter:
         self.check_usable()
         print("初始化")
         self.load_sended()
-        try:
-            # self.random_cookie_list = get_cookie_elements(self.tag)
-            await self.get_cookie_elements_to_num(max_page=self.max_page)
-            print(self.random_cookie_list)
-            await self.pick_some_cookies_to_download(4)
-        except Exception:
-            if not self.random_cookie_list:
-                print("tag无效")
-                raise Exception
-            print("网络错误，3s后进行重试")
-            import time
-            await asyncio.sleep(3)
+        # try:
+        #     await self.get_cookie_elements_to_num(max_page=self.max_page)
+        #     print(self.random_cookie_list)
+        #     await self.pick_some_cookies_to_download(4)
+        # except Exception:
+        #     if not self.random_cookie_list:
+        #         print("tag无效")
+        #         raise Exception
+        #     print("网络错误，3s后进行重试")
+        #     import time
+        #     await asyncio.sleep(3)
         print("初始化完毕")
 
     def save_to_json(self):
@@ -231,42 +230,69 @@ class Cookie_image_getter:
                 self.completed.remove(elem)
         await self.check_complete()
 
-
     async def check_complete(self):
         if len(self.completed) < 4:
             await self.pick_some_cookies_to_download(4)
 
+    # async def send_random_cookie(self, bot: Bot, event: Event):
+    #     print("随机饼图，启动")
+    #     if not self.completed:
+    #         await asyncio.sleep(2)
+    #         while not self.completed:
+    #             asyncio.create_task(self.pick_some_cookies_to_download(1))
+    #             await asyncio.sleep(2)
+    #     elem = random.sample(self.completed, 1)[0]
+    #     print(elem, '发送')
+    #     image_path = os.path.abspath('image')
+    #     file_path = f'{image_path}/{elem}'
+    #     try:
+    #         await send_image_from_ab_path(bot, event, file_path)
+    #     except Exception:
+    #         print("发送失败245")
+    #         await send_image_from_ab_path(bot, event, file_path)
+    #     try:
+    #         self.completed.remove(elem)
+    #         os.remove(file_path)
+    #     except PermissionError or ValueError:
+    #         pass
+    #     self.sended.append(elem)
+    #     self.save_to_json()
+    #     asyncio.create_task(self.pick_some_cookies_to_download(1))
+    #     self.check_reload()
     async def send_random_cookie(self, bot: Bot, event: Event):
         print("随机饼图，启动")
-        if not self.completed:
-            await asyncio.sleep(2)
-            while not self.completed:
-                asyncio.create_task(self.pick_some_cookies_to_download(1))
-                await asyncio.sleep(2)
-        elem = random.sample(self.completed, 1)[0]
-        print(elem, '发送')
+        elem = random.sample(os.listdir("image"), 1)[0]
         image_path = os.path.abspath('image')
-        file_path = f'{image_path}/{elem}'
-        try:
-            await send_image_from_ab_path(bot, event, file_path)
-        except Exception:
-            print("发送失败245")
-            await send_image_from_ab_path(bot, event, file_path)
-        try:
-            self.completed.remove(elem)
-            os.remove(file_path)
-        except PermissionError or ValueError:
-            pass
-        self.sended.append(elem)
-        self.save_to_json()
-        asyncio.create_task(self.pick_some_cookies_to_download(1))
-        self.check_reload()
+        file_path = os.path.join(image_path, elem)
+        await send_image_from_ab_path(bot, event, file_path)
 
     def check_reload(self):
         while len(self.random_cookie_list) < 20:
             self.random_cookie_list += get_cookie_elements(self.tag, max_page=self.max_page)
             asyncio.create_task(self.pick_some_cookies_to_download(2))
             self.get_out_of_sended()
+
+import threading
+class cookie_download_thread(threading.Thread):
+    def __init__(self, tag="クッキー☆", max_page=100):
+        threading.Thread.__init__(self)
+        self.tag = tag
+        self.random_cookie_list = []
+        self.max_page = max_page
+
+    def check_reload(self):
+        while len(self.random_cookie_list) < 20:
+            self.random_cookie_list += get_cookie_elements(self.tag, max_page=self.max_page)
+
+    def run(self):
+        while True:
+            self.check_reload()
+            image_num = len(os.listdir("image"))
+            if image_num < 8:
+                selected_elements = random.sample(self.random_cookie_list, 5)
+                self.random_cookie_list = [elem for elem in self.random_cookie_list if elem not in selected_elements]
+                download_muti_im(selected_elements)
+
 
 
 if __name__ == '__main__':
