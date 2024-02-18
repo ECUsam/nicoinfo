@@ -267,8 +267,8 @@ class Cookie_image_getter:
     #     self.check_reload()
     async def send_random_cookie(self, bot: Bot, event: Event):
         print("随机饼图，启动")
-        elem = random.sample(os.listdir("image"), 1)[0]
-        image_path = os.path.abspath('image')
+        elem = random.sample(os.listdir("image_cookie"), 1)[0]
+        image_path = os.path.abspath('image_cookie')
         file_path = os.path.join(image_path, elem)
         await send_image_from_ab_path(bot, event, file_path)
         try:
